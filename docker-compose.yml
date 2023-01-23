@@ -1,0 +1,11 @@
+version: '3'
+services:
+  gcc:
+    restart: always
+    build: .
+    container_name: 'cpp_ms'
+    tty: true
+    volumes:
+      - type: bind
+        source: "./project"
+        target: "/home/project"
