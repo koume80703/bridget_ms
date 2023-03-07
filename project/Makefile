@@ -24,7 +24,7 @@ RM := rm -rf
 # 実行ファイルへの統合
 $(EXEDIR)/$(PROJECT) : $(addprefix $(OBJDIR)/,$(OBJECTS))
 		@if [ ! -e `dirname $@` ]; then mkdir -p `dirname $@`; fi
-		$(CXX) -o $@ $^
+		$(CXX) -pthread -o $@ $^
 
 
 # オブジェクトファイルへのコンパイル

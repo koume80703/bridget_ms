@@ -62,8 +62,12 @@ double Node::evaluate() {
             playout_count++;
         }
 
-        for (int i = 0; i < PLAYOUT_NUM; i++) {
-            value += playout(state, target);
+        if (MULTI_THREADS) {
+            value += Node::playout_mt(state, target);
+        } else {
+            for (int i = 0; i < PLAYOUT_NUM; i++) {
+                value += Node::playout(state, target);
+            }
         }
 
         if (TIME_MEASURING) {
@@ -180,7 +184,10 @@ Node& Node::next_child_based_ucb() {
     return children[argmax<double>(ucb1_values)];
 }
 
-double Node::playout(const State state, const Player target) {
+void Node::visited() { this->n++; }
+void Node::update_weight(const int value) { this->w += value; }
+
+int Node::playout(const State state, const Player target) {
     if (state.is_done()) {
         return state.get_result(target);
     }
@@ -201,12 +208,27 @@ double Node::playout(const State state, const Player target) {
     }
 
     if (la.empty()) {
-        return playout(state.pass_moving(), target);
+        return Node::playout(state.pass_moving(), target);
     } else {
         Action act = Game::random_action(la);
-        return playout(state.next(act), target);
+        return Node::playout(state.next(act), target);
     }
 }
 
-void Node::visited() { this->n++; }
-void Node::update_weight(const int value) { this->w += value; }
+int Node::playout_mt(const State state, const Player target) {
+    const int cores_num = thread::hardware_concurrency();
+
+    future<int> futures[cores_num];
+    for (int i = 0; i < cores_num; i++) {
+        futures[i] = async(launch::async, [state, target]() {
+            return playout(state, target);
+        });
+    }
+
+    int sum = 0;
+    for (int i = 0; i < cores_num; i++) {
+        sum += futures[i].get();
+    }
+
+    return sum;
+}

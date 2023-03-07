@@ -2,13 +2,14 @@
 
 namespace node {
 const bool DEBUG_NODE = false;
+const bool MULTI_THREADS = true;
 const int EXPAND_BASE = 2;
 const int PLAYOUT_NUM = 1;
 }  // namespace node
 
 namespace mcts {
 const bool DEBUG_MCTS = false;
-const int EVALUATE_NUM = 2000;
+const int EVALUATE_NUM = 200;
 }  // namespace mcts
 
 namespace measuring {
