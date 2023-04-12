@@ -105,13 +105,52 @@ double Node::evaluate() {
     }
 }
 
-const State Node::get_state() const { return state; }
+double Node::evaluate_mt() {
+    if (state.is_done()) {
+        double value = state.get_result(target);
 
-vector<Node> Node::get_children() const { return children; }
+        pthread_mutex_lock(&mutex);
+        update_weight(value);
+        visited();
+        pthread_mutex_unlock(&mutex);
 
-int Node::get_n() const { return n; }
+        return value;
+    }
 
-double Node::get_w() const { return w; }
+    if (children.empty()) {
+        double value = 0;
+
+        for (int i = 0; i < PLAYOUT_NUM; i++) {
+            value += Node::playout(state, target);
+        }
+
+        pthread_mutex_lock(&mutex);
+        update_weight(value);
+        visited();
+        pthread_mutex_unlock(&mutex);
+
+        if (n == expand_base) {
+            pthread_mutex_lock(&mutex);
+            expand();
+            pthread_mutex_unlock(&mutex);
+        }
+
+        return value;
+    }
+
+    else {
+        Node& child = next_child_based_ucb();
+
+        double value = child.evaluate();
+
+        pthread_mutex_lock(&mutex);
+        update_weight(value);
+        visited();
+        pthread_mutex_unlock(&mutex);
+
+        return value;
+    }
+}
 
 void Node::expand() {
     if (TIME_MEASURING) {
@@ -145,6 +184,14 @@ void Node::expand() {
         total_expand_time += expand_time;
     }
 }
+
+const State Node::get_state() const { return state; }
+
+vector<Node> Node::get_children() const { return children; }
+
+int Node::get_n() const { return n; }
+
+double Node::get_w() const { return w; }
 
 Node& Node::next_child_based_ucb() {
     // 探索されていないノードがあれば、そのノードを返す。

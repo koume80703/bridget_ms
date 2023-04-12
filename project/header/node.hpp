@@ -19,6 +19,8 @@ class Node {
     static const int EXPAND_BASE = node::EXPAND_BASE;
     static const int PLAYOUT_NUM = node::PLAYOUT_NUM;
 
+    static pthread_mutex_t mutex;
+
     Node();
     Node(const State state, const Player target = Game::TARGET_PLAYER,
          const int expand_base = EXPAND_BASE);
@@ -28,6 +30,8 @@ class Node {
     Node& operator=(const Node& rhs);
 
     double evaluate();
+    double evaluate_mt();
+
     void expand();
 
     const State get_state() const;
@@ -36,7 +40,6 @@ class Node {
     double get_w() const;
 
     static int playout(const State state, const Player target);
-
     static int playout_mt(const State state, const Player target);
 
    private:
