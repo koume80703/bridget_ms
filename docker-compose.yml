@@ -3,7 +3,7 @@ services:
   gcc:
     restart: always
     build: .
-    container_name: 'cpp_ms'
+    container_name: 'cpp_mt'
     tty: true
     volumes:
       - type: bind

@@ -1,7 +1,7 @@
 FROM gcc:latest
 
 LABEL maintainer="kohei_lab"
-LABEL description="cpp_ms"
+LABEL description="cpp_mt"
 
 ARG DEBIAN_FRONTEND=noninteractive
 ENV TZ="Asia/Tokyo"
